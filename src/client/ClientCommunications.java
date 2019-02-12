@@ -144,6 +144,7 @@ public class ClientCommunications implements Runnable {
 				result = ois.readInt();
 			} catch (IOException e) {
 				ClientLogger.logError("Registration failed(IOException): " + e.getMessage());
+				result = ResultCode.serverDown;
 			}
 		}
 		disconnect();

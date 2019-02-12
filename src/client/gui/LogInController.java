@@ -81,6 +81,8 @@ public class LogInController {
 					errorMsg = "Registration failed: Password has wrong format.";
 				} else if (result == ResultCode.userNameAlreadyTaken) {
 					errorMsg = "Registration failed: Username already taken.";
+				} else if(result == ResultCode.serverDown) {
+				    errorMsg = "Registration failed: Could not connect to server.";
 				} else {
 					errorMsg = "Registration failed.";
 				}

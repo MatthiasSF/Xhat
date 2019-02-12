@@ -8,4 +8,6 @@ public final class ResultCode {
 	public static final int wrongUsernameFormat = -2;
 	public static final int wrongPasswordFormat = -3;
 	public static final int userNameAlreadyTaken = -4;
+
+    public static final int serverDown = -5;
 }
