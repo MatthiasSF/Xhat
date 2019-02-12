@@ -352,6 +352,32 @@ public class MainPanel extends JPanel {
 		}
 	}
 	
+	/** 
+     * Refactor
+     * Extraherad frÂn ButtonListener-klassen fˆr att anv‰ndas med Enter frÂn textArea
+     */
+    private void sendMessage() {
+        mainController.restartDisconnectTimer();
+        JLabel selectedContact = (isGroupInFocus) ? jlistGroupChats.getSelectedValue() : jlistContactList.getSelectedValue();
+        byte[] bytesOfMessage = null;
+        try {
+            bytesOfMessage = getMessageTxt().getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        if(bytesOfMessage.length > 3 * Math.pow(10, 6)) {
+            JOptionPane.showMessageDialog(null, "Please write a message consisting of less than 3 MB");
+        } else if (selectedContact != null) {
+            mainController.sendMessage(selectedContact.getName(), getMessageTxt().getBytes(), isGroupInFocus, Message.TYPE_TEXT);
+        } else {
+            JOptionPane.showMessageDialog(null, "Please select a contact or a group.", "Info", JOptionPane.INFORMATION_MESSAGE);
+        }
+        
+    }
+
+	
+	
+	
 	/**
 	 * inre klass som hanterar h√§ndelser f√∂r
 	 * knapptryck i chattf√∂nstret. 
@@ -363,21 +389,7 @@ public class MainPanel extends JPanel {
 			if(event.getSource() == btnLogout) {
 				mainController.disconnect();
 			} else if (event.getSource() == btnSend) {
-				mainController.restartDisconnectTimer();
-				JLabel selectedContact = (isGroupInFocus) ? jlistGroupChats.getSelectedValue() : jlistContactList.getSelectedValue();
-				byte[] bytesOfMessage = null;
-				try {
-					bytesOfMessage = getMessageTxt().getBytes("UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				if(bytesOfMessage.length > 3 * Math.pow(10, 6)) {
-					JOptionPane.showMessageDialog(null, "Please write a message consisting of less than 3 MB");
-				} else if (selectedContact != null) {
-					mainController.sendMessage(selectedContact.getName(), getMessageTxt().getBytes(), isGroupInFocus, Message.TYPE_TEXT);
-				} else {
-					JOptionPane.showMessageDialog(null, "Please select a contact or a group.", "Info", JOptionPane.INFORMATION_MESSAGE);
-				}
+			    sendMessage();
 			} else if (event.getSource() == btnSendFile) {
 				mainController.restartDisconnectTimer();
 				JLabel selectedContact = (isGroupInFocus) ? jlistGroupChats.getSelectedValue() : jlistContactList.getSelectedValue();
@@ -428,8 +440,8 @@ public class MainPanel extends JPanel {
 				}
 			}
 		}
+		
 	}
-
 	/**
 	 * inre klass som g√∂r att en JList visar JLabels som text eller bild utan markering.
 	 */
