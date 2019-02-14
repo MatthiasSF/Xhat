@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -28,6 +30,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -218,6 +221,8 @@ public class MainPanel extends JPanel {
 		btnAddContact.addActionListener(listener);
 		btnRemoveCon.addActionListener(listener);
 		btnLeaveGroupChat.addActionListener(listener);
+		
+		setupKeyActions();
 	}
 
 	/**
@@ -375,8 +380,26 @@ public class MainPanel extends JPanel {
         
     }
 
-	
-	
+	/** 
+	 * Ändra default keymap "ENTER" i txtMessageField till att skicka istället för radbryt
+	 */
+    private void setupKeyActions() {
+        Action sendAction = new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                sendMessage();
+
+            }
+        };
+
+        KeyStroke sendOnReturn = KeyStroke.getKeyStroke("ENTER");
+        txtMessageField.getInputMap().put(sendOnReturn, "ENTER");
+        txtMessageField.getActionMap().put("ENTER", sendAction);
+
+
+
+    }
 	
 	/**
 	 * inre klass som hanterar hÃ¤ndelser fÃ¶r
