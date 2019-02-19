@@ -238,7 +238,8 @@ public class MainController {
 				listModel.add(0, listModel.remove(contactPos));
 			}
 		}
-		JOptionPane.showMessageDialog(frameMain, "You got a new message from " + userNameToNotify);	
+		//Krav 07: Programmet ska inte starta nya rutor för varje meddelande.
+		//JOptionPane.showMessageDialog(frameMain, "You got a new message from " + userNameToNotify);	
 	}
 	
 	private int getPosInListModel(DefaultListModel<JLabel> listModel, String contactName) {

@@ -388,6 +388,7 @@ public class MainPanel extends JPanel {
 
 	/** 
 	 * Ändra default keymap "ENTER" i txtMessageField till att skicka istället för radbryt
+	 * Krav03
 	 */
     private void setupKeyActions() {
         Action sendAction = new AbstractAction() {

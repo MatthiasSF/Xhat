@@ -9,5 +9,5 @@ public final class ResultCode {
 	public static final int wrongPasswordFormat = -3;
 	public static final int userNameAlreadyTaken = -4;
 
-    public static final int serverDown = -5;
+    public static final int serverDown = -5; //Krav 01
 }

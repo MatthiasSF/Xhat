@@ -82,7 +82,7 @@ public class LogInController {
 				} else if (result == ResultCode.userNameAlreadyTaken) {
 					errorMsg = "Registration failed: Username already taken.";
 				} else if(result == ResultCode.serverDown) {
-				    errorMsg = "Registration failed: Could not connect to server.";
+				    errorMsg = "Registration failed: Could not connect to server."; //Krav 01 
 				} else {
 					errorMsg = "Registration failed.";
 				}
