@@ -4,6 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -36,6 +39,15 @@ public class ServerController {
 		server.start();
 
 		guiFrame = new JFrame();
+		
+		//Krav 05: Om servern stängs ner så raderas alla skapade användare, bör finnas sparfunktion
+		//Det sparas om man trycker close server, fixa så att den sparar på default-close-operation
+		guiFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		guiFrame.addWindowListener(new WindowAdapter() {
+		    public void windowClosing(WindowEvent evt) {
+		        server.shutdownServer();
+		    }
+		});
 		
 		jlLogList.setModel(logModel);
 		jlLogList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
