@@ -359,25 +359,31 @@ public class MainPanel extends JPanel {
 	
 	/** 
      * Refactor
-     * Extraherad från ButtonListener-klassen för att användas med Enter från textArea
+     * Extraherad från ButtonListener-klassen för att användas med Enter från textArea enligt Krav03
+     * Krav03: Det ska gå att skicka meddelanden genom att trycka Enter. Klar
+     * Buggfix: Bugg05 -> Det ska inte gå att skicka tomma meddelande. Klar
      */
     private void sendMessage() {
         mainController.restartDisconnectTimer();
         JLabel selectedContact = (isGroupInFocus) ? jlistGroupChats.getSelectedValue() : jlistContactList.getSelectedValue();
         byte[] bytesOfMessage = null;
-        try {
-            bytesOfMessage = getMessageTxt().getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        if(!getMessageTxt().isEmpty()) {
+            try {
+                bytesOfMessage = getMessageTxt().getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            if(bytesOfMessage.length > 3 * Math.pow(10, 6)) {
+                JOptionPane.showMessageDialog(null, "Please write a message consisting of less than 3 MB");
+            } else if (selectedContact != null) {
+                mainController.sendMessage(selectedContact.getName(), getMessageTxt().getBytes(), isGroupInFocus, Message.TYPE_TEXT);
+            } else {
+                JOptionPane.showMessageDialog(null, "Please select a contact or a group.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            }
+            
         }
-        if(bytesOfMessage.length > 3 * Math.pow(10, 6)) {
-            JOptionPane.showMessageDialog(null, "Please write a message consisting of less than 3 MB");
-        } else if (selectedContact != null) {
-            mainController.sendMessage(selectedContact.getName(), getMessageTxt().getBytes(), isGroupInFocus, Message.TYPE_TEXT);
-        } else {
-            JOptionPane.showMessageDialog(null, "Please select a contact or a group.", "Info", JOptionPane.INFORMATION_MESSAGE);
-        }
-        
+       
+
     }
 
 	/** 
