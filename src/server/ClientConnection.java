@@ -121,6 +121,21 @@ public class ClientConnection implements Runnable, UserListener {
 			logListener.logError("receiveContactRequest() Received invalid contactRequest-obj from " + getUser().getUserName());
 		}
 	}
+	//Bugg04: Kontakt går ej att radera
+	/** 
+	 * Tell the server what to do when receiving a request to remove a contact. 
+	 * Remove the connection both ways between two users. 
+	 * @param requestObj - String[] object containing the username of the user to remove. 
+	 */
+	private void receiveRemoveContactRequest(Object requestObj) {
+	    String[] removeContactRequest;
+	    if(requestObj instanceof String[]) {
+	        removeContactRequest = (String[]) requestObj;
+	        User requestedUser = clientsManager.getUser(removeContactRequest[0]);
+	        this.user.removeContact(requestedUser);
+	        requestedUser.removeContact(this.user);
+	    }
+	}
 
 	private void receiveNewGroup(Object obj) throws ClassNotFoundException, IOException {
 		String[] newGroup;
@@ -214,14 +229,18 @@ public class ClientConnection implements Runnable, UserListener {
 	 * @throws IOException 
 	 */
 	private void transferContactList() throws IOException {
+	    System.out.println("ClientConnection.transferContactList start");
 		String[][] contacts = getUser().getContactsArray();
 		int nbrOfContacts = contacts.length;
-		if(nbrOfContacts > 0) {
+		if(nbrOfContacts >= 0) { //Bugg04: Kontakt går ej att radera changed from > 0 to >=0 in order to be able to remove a single contact.  
+		    System.out.println("nbrOfContacts: " + nbrOfContacts + " in the if-statement");
 			oos.writeObject("ContactList");
 			oos.writeObject(contacts);
 			oos.flush();
 			logListener.logInfo("Transfered " + nbrOfContacts + " contacts to: " + getUser().getUserName());
 		}
+		
+		System.out.println("ClientConnection.transferContactList end");
 	}
 	
 	private void transferGroupChats() throws IOException {
@@ -455,6 +474,11 @@ public class ClientConnection implements Runnable, UserListener {
 						case "Disconnect":
 							disconnectClient();
 							break;
+						
+						//Bugg04: Kontakt går ej att radera
+						case "RemoveContactRequest":
+						    receiveRemoveContactRequest(ois.readObject());
+						    break;
 						default:
 							logListener.logError("Unknown request");
 						}

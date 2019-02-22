@@ -427,6 +427,16 @@ public class MainController {
 		String[] requestObj = new String[]{userName, Boolean.toString(decline)};
 		clientCommunications.sendNewContactRequest(requestObj);
 	}
+	
+	//Bugg04: Kontakt går ej att radera
+	/** 
+	 * Create the request for the server that removal of a contact is desired. 
+	 * @param userName the name of the user to remove. 
+	 */
+	public void sendRemoveContactRequest(String userName) {
+	    String[] requestObj = new String[] {userName};
+	    clientCommunications.sendRemoveContactRequest(requestObj);
+	}
 
 	public void notifyNewContactRequest(String requestFromUserName) {
 		Object[] options = { "Yes", "No" };

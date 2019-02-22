@@ -443,12 +443,15 @@ public class MainPanel extends JPanel {
 			} else if (event.getSource() == btnRemoveCon) {
 				JLabel selectedContact = jlistContactList.getSelectedValue();
 				if (selectedContact != null) {
+				    String selectedContactName = selectedContact.getName();
 					Object[] options = { "Yes", "No" };
 					int choice = JOptionPane.showOptionDialog(null,
-							"Do you want to remove " + selectedContact.getName() + " from contact list?",
+							"Do you want to remove " + selectedContactName + " from contact list?",
 							"Remove Contact", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
 					if (choice == 0) {
 						System.out.println("Yes");
+						//Bugg04: Kontakt går ej att radera
+						mainController.sendRemoveContactRequest(selectedContactName);
 					} else {
 						System.out.println("No");
 					}

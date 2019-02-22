@@ -53,6 +53,21 @@ public class ClientCommunications implements Runnable {
 		}
 	}
 	
+	//Bugg04: Kontakt går ej att radera
+	/** 
+	 * Send a message to server to remove a contact
+	 * @param requestObj String[] containing only a username, could change to String.
+	 */
+	public void sendRemoveContactRequest(String[] requestObj) {
+	    try {
+	        oos.writeObject("RemoveContactRequest");
+	        oos.writeObject(requestObj);
+	        oos.flush();
+	    } catch(IOException e) {
+	        disconnect();
+	    }
+	}
+	
 	public void searchUser(String searchString) {
 		try {
 			oos.writeObject("SearchUser");
@@ -184,6 +199,7 @@ public class ClientCommunications implements Runnable {
 	}
 
 	private void receiveContactList(Object contactsObj) throws ClassNotFoundException, IOException {
+	    data.removeAllContacts(); //Bugg04: Kontakt går ej att radera, fullösning, alternativ, iterera genom båda listor och jämför, extrahera skillnaden och skicka med som parameter till data.remove(User user) eller data.remove(String username) 
 		if (contactsObj instanceof String[][]) {
 			String[][] contacts = (String[][])contactsObj;
 			for (int i = 0; i < contacts.length; i++) {
