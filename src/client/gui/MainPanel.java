@@ -452,6 +452,7 @@ public class MainPanel extends JPanel {
 						System.out.println("Yes");
 						//Bugg04: Kontakt går ej att radera
 						mainController.sendRemoveContactRequest(selectedContactName);
+						JOptionPane.showMessageDialog(null, "The contact has been removed");
 					} else {
 						System.out.println("No");
 					}
