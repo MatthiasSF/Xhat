@@ -121,7 +121,7 @@ public class ClientConnection implements Runnable, UserListener {
 			logListener.logError("receiveContactRequest() Received invalid contactRequest-obj from " + getUser().getUserName());
 		}
 	}
-	//Bugg04: Kontakt går ej att radera
+	//Bugg04: Kontakt gï¿½r ej att radera
 	/** 
 	 * Tell the server what to do when receiving a request to remove a contact. 
 	 * Remove the connection both ways between two users. 
@@ -232,7 +232,7 @@ public class ClientConnection implements Runnable, UserListener {
 	    System.out.println("ClientConnection.transferContactList start");
 		String[][] contacts = getUser().getContactsArray();
 		int nbrOfContacts = contacts.length;
-		if(nbrOfContacts >= 0) { //Bugg04: Kontakt går ej att radera changed from > 0 to >=0 in order to be able to remove a single contact.  
+		if(nbrOfContacts >= 0) { //Bugg04: Kontakt gï¿½r ej att radera changed from > 0 to >=0 in order to be able to remove a single contact.  
 		    System.out.println("nbrOfContacts: " + nbrOfContacts + " in the if-statement");
 			oos.writeObject("ContactList");
 			oos.writeObject(contacts);
@@ -301,6 +301,7 @@ public class ClientConnection implements Runnable, UserListener {
 
 	private boolean login(Object credentialsObj) {
 		boolean success = false;
+		int result = ResultCode.ok;
 		try {
 			if (credentialsObj instanceof String[]) {
 				String[] credentials;
@@ -308,22 +309,38 @@ public class ClientConnection implements Runnable, UserListener {
 				String userName, password;
 				userName = credentials[0];
 				password = credentials[1];
-				User user = clientsManager.getUser(userName);
-				if (user != null && user.checkPassword(password) == true) {
-					oos.writeBoolean(true);
-					oos.flush();
-					this.user = user;
-					ClientConnection clientConnection = user.getClientConnection();
-					if (clientConnection != null) {
-						clientConnection.disconnectClient();
+				boolean userNameOk = userName.length() > 0 && userName.length() <= 10 && 
+						!hasSpecialCharacters(userName);
+				boolean passwordOk = password.length() > 0 && password.length() <= 20;
+				
+				if (userNameOk && passwordOk) {
+					User user = clientsManager.getUser(userName);
+					if (user != null && user.checkPassword(password) == true) {
+						this.user = user;
+						ClientConnection clientConnection = user.getClientConnection();
+						if (clientConnection != null) {
+							clientConnection.disconnectClient();
+						}
+						user.setClientConnection(this);
+						success = true;
+					} else {
+						logListener.logError("Client login failed: wrong userName or password.");
+						result = ResultCode.wrongCredentials;
 					}
-					user.setClientConnection(this);
-					success = true;
 				} else {
-					logListener.logError("Client login failed: wrong userName or password.");
-					oos.writeBoolean(false);
-					oos.flush();
+					if (!userNameOk && !passwordOk) {
+						logListener.logError("Client login failed: Username and password have wrong format.");
+						result = ResultCode.wrongUserNameAndPasswordFormat;
+					} else if (!userNameOk) {
+						logListener.logError("Client login failed: Username has wrong format.");
+						result = ResultCode.wrongUsernameFormat;
+					} else if (!passwordOk) {
+						logListener.logError("Client login failed: Password has wrong format.");
+						result = ResultCode.wrongPasswordFormat;
+					}
 				}
+				oos.writeInt(result);
+				oos.flush();
 			} else {
 				logListener.logError("login() Received non-string[] credentials from client.");
 			}
@@ -354,7 +371,7 @@ public class ClientConnection implements Runnable, UserListener {
 				} else {
 					if (!userNameOk && !passwordOk) {
 						logListener.logError("Registration failed: Username and password have wrong format.");
-						result = ResultCode.wrongCredentials;
+						result = ResultCode.wrongUserNameAndPasswordFormat;
 					} else if (!userNameOk) {
 						logListener.logError("Registration failed: Username has wrong format.");
 						result = ResultCode.wrongUsernameFormat;
@@ -475,7 +492,7 @@ public class ClientConnection implements Runnable, UserListener {
 							disconnectClient();
 							break;
 						
-						//Bugg04: Kontakt går ej att radera
+						//Bugg04: Kontakt gï¿½r ej att radera
 						case "RemoveContactRequest":
 						    receiveRemoveContactRequest(ois.readObject());
 						    break;

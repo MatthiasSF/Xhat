@@ -28,7 +28,7 @@ public class ClientCommunications implements Runnable {
 		this.port = port;
 		this.data = data;
 	}
-	
+
 	public boolean sendMessage(Message message) {
 		boolean success = false;
 		try {
@@ -42,7 +42,7 @@ public class ClientCommunications implements Runnable {
 		}
 		return success;
 	}
-	
+
 	public void sendNewContactRequest(String[] requestObj) {
 		try {
 			oos.writeObject("NewContactRequest");
@@ -52,22 +52,22 @@ public class ClientCommunications implements Runnable {
 			disconnect();
 		}
 	}
-	
-	//Bugg04: Kontakt går ej att radera
+
+	//Bugg04: Kontakt gï¿½r ej att radera
 	/** 
 	 * Send a message to server to remove a contact
 	 * @param requestObj String[] containing only a username, could change to String.
 	 */
 	public void sendRemoveContactRequest(String[] requestObj) {
-	    try {
-	        oos.writeObject("RemoveContactRequest");
-	        oos.writeObject(requestObj);
-	        oos.flush();
-	    } catch(IOException e) {
-	        disconnect();
-	    }
+		try {
+			oos.writeObject("RemoveContactRequest");
+			oos.writeObject(requestObj);
+			oos.flush();
+		} catch(IOException e) {
+			disconnect();
+		}
 	}
-	
+
 	public void searchUser(String searchString) {
 		try {
 			oos.writeObject("SearchUser");
@@ -87,23 +87,23 @@ public class ClientCommunications implements Runnable {
 			disconnect();
 		}
 	}
-	
+
 	public void leaveGroup(String groupId) {
 		try {
 
-	        oos.writeObject("LeaveGroup");
+			oos.writeObject("LeaveGroup");
 
-	        oos.writeObject(groupId);
+			oos.writeObject(groupId);
 
-	        oos.flush();
+			oos.flush();
 
-	    } catch (IOException e) {
+		} catch (IOException e) {
 
-	        disconnect();
+			disconnect();
 
-	    }
+		}
 	}
-	
+
 	public String getUserName() {
 		return this.userName;
 	}
@@ -115,35 +115,36 @@ public class ClientCommunications implements Runnable {
 		}
 		return connected;
 	}
-	
-	public boolean login(String userName, String password) {
+
+	public int login(String userName, String password) {
 		//TODO: Dont let UI-thread from LoginController execute this code
-		try {
-			if (!this.loggedIn) {
+		int result = ResultCode.ok;
+		if (!this.loggedIn) {
+			try {
 				if(!isConnected()) {
 					establishConnection();
 				}
 				oos.writeObject("Login");
 				oos.writeObject(new String[] { userName, password });
 				oos.flush();
-				this.loggedIn = ois.readBoolean();
-				if (this.loggedIn == true) {
+				result = ois.readInt();
+
+				if(result == ResultCode.ok) {
+					this.loggedIn = true;
 					this.userName = userName;
 					this.mainController = new MainController(this, data);
-					ClientLogger.logInfo("login() Succesfully logged in as: " + userName);
 					startListener();
 				} else {
-					ClientLogger.logError("Wrong username or password.");
 					disconnect();
 				}
-			} else {
-				ClientLogger.logError("login() This client is already logged in as: " + getUserName());
+			} catch (IOException e) {
+				ClientLogger.logError("Login failed(IOException): " + e.getMessage());
+				disconnect();
+				result = ResultCode.serverDown;
 			}
-		} catch (IOException e) {
-			ClientLogger.logError("Login failed(IOException): " + e.getMessage());
-			disconnect();
 		}
-		return loggedIn;
+		
+		return result;
 	}
 
 	public int register(String userName, String password) {
@@ -163,10 +164,10 @@ public class ClientCommunications implements Runnable {
 			}
 		}
 		disconnect();
-		
+
 		return result;
 	}
-	
+
 	public void disconnect() {
 		disconnect("Disconnected from server");
 	}
@@ -190,7 +191,7 @@ public class ClientCommunications implements Runnable {
 			ClientLogger.logInfo(message);
 		}
 	}
-	
+
 	private void establishConnection() throws SocketException, IOException {
 		socket = new Socket(ip, port);
 		socket.setSoTimeout(1000);
@@ -199,7 +200,7 @@ public class ClientCommunications implements Runnable {
 	}
 
 	private void receiveContactList(Object contactsObj) throws ClassNotFoundException, IOException {
-	    data.removeAllContacts(); //Bugg04: Kontakt går ej att radera, fullösning, alternativ, iterera genom båda listor och jämför, extrahera skillnaden och skicka med som parameter till data.remove(User user) eller data.remove(String username) 
+		data.removeAllContacts(); //Bugg04: Kontakt gï¿½r ej att radera, fullï¿½sning, alternativ, iterera genom bï¿½da listor och jï¿½mfï¿½r, extrahera skillnaden och skicka med som parameter till data.remove(User user) eller data.remove(String username) 
 		if (contactsObj instanceof String[][]) {
 			String[][] contacts = (String[][])contactsObj;
 			for (int i = 0; i < contacts.length; i++) {
@@ -273,7 +274,7 @@ public class ClientCommunications implements Runnable {
 			ClientLogger.logError("receiveMessage(): Received non-Message object.");
 		}
 	}
-	
+
 	private void receiveSearchResults(Object resultsObj) {
 		if (resultsObj instanceof String[]) {
 			String[] results = (String[])resultsObj;
@@ -283,7 +284,7 @@ public class ClientCommunications implements Runnable {
 			ClientLogger.logError("receiveSearchResults(): Received non-String[] object.");
 		}
 	}
-	
+
 	private void receiveContactRequest(Object requestObj) {
 		if (requestObj instanceof String) {
 			String requestFromUserName = (String)requestObj;
@@ -302,7 +303,7 @@ public class ClientCommunications implements Runnable {
 			ClientLogger.logError("Error: startListener(): Listener thread already running.");
 		}
 	}
-	
+
 	private void stopListener() {
 		if(thread != null) {
 			thread.interrupt();
@@ -332,10 +333,10 @@ public class ClientCommunications implements Runnable {
 							receiveContactList(ois.readObject());
 							break;
 						case "GroupChats":
-							 receiveGroupChats(ois.readObject());
+							receiveGroupChats(ois.readObject());
 							break;
 						case "BufferedMessages":
-							 receiveBufferedMessages(ois.readObject());
+							receiveBufferedMessages(ois.readObject());
 							break;
 						case "SearchResult":
 							receiveSearchResults(ois.readObject());
@@ -360,7 +361,7 @@ public class ClientCommunications implements Runnable {
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
-				 disconnect();
+				disconnect();
 			}
 		} else {
 			ClientLogger.logError("Listener stopped: Client not connected or logged in.");
