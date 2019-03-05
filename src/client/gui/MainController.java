@@ -238,7 +238,7 @@ public class MainController {
 				listModel.add(0, listModel.remove(contactPos));
 			}
 		}
-		//Krav 07: Programmet ska inte starta nya rutor för varje meddelande.
+		//Krav 07: Programmet ska inte starta nya rutor fï¿½r varje meddelande.
 		//JOptionPane.showMessageDialog(frameMain, "You got a new message from " + userNameToNotify);	
 	}
 	
@@ -276,6 +276,10 @@ public class MainController {
 			mainPanel.setChattingWith(contactName);
 			mainPanel.setOtherUserStatus(contact.isOnline());
 			mainPanel.scrollDownConversation();
+			if(isGroup) {
+				mainPanel.setGroupChattingWith(contactName);
+				mainPanel.setOtherGroupStatus(true);
+			}
 		}
 	}
 
@@ -428,7 +432,7 @@ public class MainController {
 		clientCommunications.sendNewContactRequest(requestObj);
 	}
 	
-	//Bugg04: Kontakt går ej att radera
+	//Bugg04: Kontakt gï¿½r ej att radera
 	/** 
 	 * Create the request for the server that removal of a contact is desired. 
 	 * @param userName the name of the user to remove. 

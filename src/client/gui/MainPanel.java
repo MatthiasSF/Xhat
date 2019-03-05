@@ -283,10 +283,22 @@ public class MainPanel extends JPanel {
 	public void setChattingWith(String userName) {
 		this.lblChattingWith.setText("You are chatting with: " + userName);
 	}
+
+	public void setGroupChattingWith(String groupName) {
+		this.lblChattingWith.setText("You are chatting with the group: " + groupName);
+	}
 	
 	public void setOtherUserStatus(boolean isOnline) {
 		if(isOnline) {
 			this.lblOtherUserStatus.setText("<html>User status: <font color='green'>Online</font></html>");
+		} else {
+			this.lblOtherUserStatus.setText("<html>User status: <font color='red'>Offline</font></html>");
+		}
+	}
+
+	public void setOtherGroupStatus(boolean isGroupChat){
+		if(isGroupChat) {
+			this.lblOtherUserStatus.setText("");
 		} else {
 			this.lblOtherUserStatus.setText("<html>User status: <font color='red'>Offline</font></html>");
 		}
@@ -359,9 +371,9 @@ public class MainPanel extends JPanel {
 	
 	/** 
      * Refactor
-     * Extraherad från ButtonListener-klassen för att användas med Enter från textArea enligt Krav03
-     * Krav03: Det ska gå att skicka meddelanden genom att trycka Enter. Klar
-     * Buggfix: Bugg05 -> Det ska inte gå att skicka tomma meddelande. Klar
+     * Extraherad frï¿½n ButtonListener-klassen fï¿½r att anvï¿½ndas med Enter frï¿½n textArea enligt Krav03
+     * Krav03: Det ska gï¿½ att skicka meddelanden genom att trycka Enter. Klar
+     * Buggfix: Bugg05 -> Det ska inte gï¿½ att skicka tomma meddelande. Klar
      */
     private void sendMessage() {
         mainController.restartDisconnectTimer();
@@ -387,7 +399,7 @@ public class MainPanel extends JPanel {
     }
 
 	/** 
-	 * Ändra default keymap "ENTER" i txtMessageField till att skicka istället för radbryt
+	 * ï¿½ndra default keymap "ENTER" i txtMessageField till att skicka istï¿½llet fï¿½r radbryt
 	 * Krav03
 	 */
     private void setupKeyActions() {
@@ -450,7 +462,7 @@ public class MainPanel extends JPanel {
 							"Remove Contact", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
 					if (choice == 0) {
 						System.out.println("Yes");
-						//Bugg04: Kontakt går ej att radera
+						//Bugg04: Kontakt gï¿½r ej att radera
 						mainController.sendRemoveContactRequest(selectedContactName);
 						JOptionPane.showMessageDialog(null, "The contact has been removed");
 					} else {
