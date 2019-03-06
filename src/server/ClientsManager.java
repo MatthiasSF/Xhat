@@ -128,35 +128,42 @@ public class ClientsManager {
 		return results.toArray(new String[results.size()]);
 	}
 
-	public void saveData() {
+	public void saveData(LogListener logListener) {
 		synchronized (users) {
 			try {
 				StorageHandler.writeToFile(users, "users.dat");
 				System.out.println("Saved users.dat");
+				logListener.logInfo("Saved users.dat");
 			} catch (IOException e) {
 				e.printStackTrace();
+				logListener.logError("Colud not write users to file: " + e.getMessage());
 			}
 		}
 		synchronized (groups) {
 			try {
 				StorageHandler.writeToFile(groups, "groups.dat");
 				System.out.println("Saved groups.dat");
+				logListener.logInfo("Saved groups.dat");
 			} catch (IOException e) {
 				e.printStackTrace();
+				logListener.logError("Colud not write groups to file: " + e.getMessage());
 			}
 		}
 	}
 	
-	public void loadData() {
+	public void loadData(LogListener logListener) {
 		try {
 			Map<String, User> users = StorageHandler.loadUsersFromFile();
 			Map<String, Group> groups = StorageHandler.loadGroupsFromFile();
 			this.users = Collections.synchronizedMap(users);
 			System.out.println("Loaded users.dat");
+			logListener.logInfo("Loaded users.dat");
 			this.groups = Collections.synchronizedMap(groups);
 			System.out.println("Loaded groups.dat");
+			logListener.logInfo("Loaded groups.dat");
 		} catch (ClassNotFoundException | IOException e) {
 			System.out.println("Could not load data: " + e.getMessage());
+			logListener.logError("Could not load data: " + e.getMessage());
 		}
 	}
 }

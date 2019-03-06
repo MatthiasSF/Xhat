@@ -1,5 +1,6 @@
 package server;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -11,6 +12,7 @@ import java.util.Map;
 public final class StorageHandler {
 	
 	public static void writeToFile(Object obj, String fileName) throws IOException {
+		new File("data").mkdir();
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/" + fileName))) {
 			oos.writeObject(obj);
 			oos.flush();

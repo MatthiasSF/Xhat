@@ -1,5 +1,6 @@
 package server;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -20,17 +21,17 @@ public final class ServerLogger {
 	public static void logError(String error) {
 		System.err.println(error);
 		try {
-			serverFile = new FileHandler("myapp-log.%u.%g.txt");
+			new File("server_logs").mkdir();
+			serverFile = new FileHandler("server_logs/myapp-log.%u.%g.txt");
+			serverFile.setFormatter(new SimpleFormatter());
+			serverErrorLog.addHandler(serverFile);
+			System.out.println(serverFile);
+			serverErrorLog.severe(error);
 		} catch (SecurityException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		serverFile.setFormatter(new SimpleFormatter());
-		serverErrorLog.addHandler(serverFile);
-		System.out.println(serverFile);
-		serverErrorLog.severe(error);
-		
 	}
-	}
+}
 
 

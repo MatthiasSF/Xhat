@@ -26,7 +26,7 @@ public class ServerConnection implements Runnable {
 	}
 	
 	public void shutdownServer() {
-		clientsManager.saveData();
+		clientsManager.saveData(logListener);
 		System.exit(0);
 	}
 
@@ -34,7 +34,7 @@ public class ServerConnection implements Runnable {
 	public void run() {
 		try (ServerSocket serverSocket = new ServerSocket(listeningPort)) {
 			logListener.logInfo("Server listening on: " + InetAddress.getLocalHost().getHostAddress() + ":" + serverSocket.getLocalPort());
-			clientsManager.loadData();
+			clientsManager.loadData(logListener);
 //			clientsManager.addTestData();
 			while (!Thread.interrupted()) {
 				Socket socket = serverSocket.accept();
