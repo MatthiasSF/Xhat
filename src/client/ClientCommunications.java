@@ -294,6 +294,16 @@ public class ClientCommunications implements Runnable {
 			ClientLogger.logError("receiveContactRequest(): Received non-String object.");
 		}
 	}
+	
+	private void contactRequestDenied(Object contactObj) {
+		if (contactObj instanceof String) {
+			String deniedFromUserName = (String)contactObj;
+			ClientLogger.logInfo("Received new contact request from: " + deniedFromUserName);
+			mainController.notifyNewContactRequestDenied(deniedFromUserName);
+		} else {
+			ClientLogger.logError("receiveContactRequest(): Received non-String object.");
+		}
+	}
 
 	private void startListener() {
 		if(thread == null) {
@@ -346,6 +356,9 @@ public class ClientCommunications implements Runnable {
 							break;
 						case "Disconnect":
 							disconnect();
+							break;
+						case "ContactRequestDenied":
+							contactRequestDenied(ois.readObject());
 							break;
 						default:
 							ClientLogger.logError("Unknown request");

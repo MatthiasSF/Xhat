@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -28,6 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -70,6 +72,7 @@ public class MainPanel extends JPanel {
 	private JButton btnAddContact = new JButton("Add contact");
 	private JButton btnAddGroupChat = new JButton("Add group chat");
 	private JButton btnLeaveGroupChat = new JButton("Leave group");
+	private JRadioButton rbtnDekryptAuto = new JRadioButton("Auto Decrypt");
 	private Font font = new Font("SansSerif", Font.BOLD, 18);
 	private boolean isGroupInFocus;
 	
@@ -101,7 +104,7 @@ public class MainPanel extends JPanel {
 	 */
 	private void generateChatPanel() {
 		JPanel mainPanel = new JPanel(new BorderLayout());
-		mainPanel.setPreferredSize(new Dimension(550, 600));
+		mainPanel.setPreferredSize(new Dimension(550, 620));
 		
 		//Norra panelen
 		JPanel northPanel = new JPanel(new BorderLayout());
@@ -180,11 +183,13 @@ public class MainPanel extends JPanel {
 		
 		//Östra panelen - knappen "add group chat"
 		JPanel addLeavePanel = new JPanel(new BorderLayout());
-		addLeavePanel.setPreferredSize(new Dimension(140, 40));
-		btnAddGroupChat.setPreferredSize(new Dimension(140, 17));
-		btnLeaveGroupChat.setPreferredSize(new Dimension(140, 17));
+		addLeavePanel.setPreferredSize(new Dimension(140, 60));
+		btnAddGroupChat.setPreferredSize(new Dimension(140, 20));
+		btnLeaveGroupChat.setPreferredSize(new Dimension(140, 20));
+		rbtnDekryptAuto.setPreferredSize(new Dimension(140, 20));
 		addLeavePanel.add(btnAddGroupChat, BorderLayout.NORTH);
-		addLeavePanel.add(btnLeaveGroupChat, BorderLayout.SOUTH);
+		addLeavePanel.add(btnLeaveGroupChat);
+		addLeavePanel.add(rbtnDekryptAuto, BorderLayout.SOUTH);
 		
 		//Östra panelen - lägga ihop alla tillhörande komponenter
 		eastPanel.add(addRemovePanel, BorderLayout.NORTH);
@@ -367,6 +372,10 @@ public class MainPanel extends JPanel {
 				}
 			}
 		}
+	}
+	
+	public boolean isAutoDecryptOn() {
+		return rbtnDekryptAuto.isSelected();
 	}
 	
 	/** 

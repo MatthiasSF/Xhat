@@ -318,7 +318,7 @@ public class MainController {
 
 	public void addMessageToConversation(Contact contact, Message message, boolean decode) {
 		JLabel jLabelMessage;
-		if(decode == true) {
+		if(decode == true || mainPanel.isAutoDecryptOn()) {
 			jLabelMessage = decodeMessage(message);
 		} else {
 			ImageIcon stegoImage = new ImageIcon(message.getStegoData());
@@ -432,7 +432,6 @@ public class MainController {
 		clientCommunications.sendNewContactRequest(requestObj);
 	}
 	
-	//Bugg04: Kontakt g�r ej att radera
 	/** 
 	 * Create the request for the server that removal of a contact is desired. 
 	 * @param userName the name of the user to remove. 
@@ -454,6 +453,9 @@ public class MainController {
 		}
 	}
 	
+	public void notifyNewContactRequestDenied(String deniedUserRequest) {
+		JOptionPane.showMessageDialog(null, deniedUserRequest + " denied your friend request");
+	}
 
     private void startDisconnectTimer() {
         TimerTask timerTask = new TimerTask() {
