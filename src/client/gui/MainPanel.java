@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -15,6 +16,8 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -26,8 +29,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -67,6 +72,7 @@ public class MainPanel extends JPanel {
 	private JButton btnAddContact = new JButton("Add contact");
 	private JButton btnAddGroupChat = new JButton("Add group chat");
 	private JButton btnLeaveGroupChat = new JButton("Leave group");
+	private JRadioButton rbtnDekryptAuto = new JRadioButton("Auto Decrypt");
 	private Font font = new Font("SansSerif", Font.BOLD, 18);
 	private boolean isGroupInFocus;
 	
@@ -98,7 +104,7 @@ public class MainPanel extends JPanel {
 	 */
 	private void generateChatPanel() {
 		JPanel mainPanel = new JPanel(new BorderLayout());
-		mainPanel.setPreferredSize(new Dimension(550, 600));
+		mainPanel.setPreferredSize(new Dimension(550, 620));
 		
 		//Norra panelen
 		JPanel northPanel = new JPanel(new BorderLayout());
@@ -177,11 +183,13 @@ public class MainPanel extends JPanel {
 		
 		//Östra panelen - knappen "add group chat"
 		JPanel addLeavePanel = new JPanel(new BorderLayout());
-		addLeavePanel.setPreferredSize(new Dimension(140, 40));
-		btnAddGroupChat.setPreferredSize(new Dimension(140, 17));
-		btnLeaveGroupChat.setPreferredSize(new Dimension(140, 17));
+		addLeavePanel.setPreferredSize(new Dimension(140, 60));
+		btnAddGroupChat.setPreferredSize(new Dimension(140, 20));
+		btnLeaveGroupChat.setPreferredSize(new Dimension(140, 20));
+		rbtnDekryptAuto.setPreferredSize(new Dimension(140, 20));
 		addLeavePanel.add(btnAddGroupChat, BorderLayout.NORTH);
-		addLeavePanel.add(btnLeaveGroupChat, BorderLayout.SOUTH);
+		addLeavePanel.add(btnLeaveGroupChat);
+		addLeavePanel.add(rbtnDekryptAuto, BorderLayout.SOUTH);
 		
 		//Östra panelen - lägga ihop alla tillhörande komponenter
 		eastPanel.add(addRemovePanel, BorderLayout.NORTH);
@@ -218,6 +226,8 @@ public class MainPanel extends JPanel {
 		btnAddContact.addActionListener(listener);
 		btnRemoveCon.addActionListener(listener);
 		btnLeaveGroupChat.addActionListener(listener);
+		
+		setupKeyActions();
 	}
 
 	/**
@@ -278,10 +288,22 @@ public class MainPanel extends JPanel {
 	public void setChattingWith(String userName) {
 		this.lblChattingWith.setText("You are chatting with: " + userName);
 	}
+
+	public void setGroupChattingWith(String groupName) {
+		this.lblChattingWith.setText("You are chatting with the group: " + groupName);
+	}
 	
 	public void setOtherUserStatus(boolean isOnline) {
 		if(isOnline) {
 			this.lblOtherUserStatus.setText("<html>User status: <font color='green'>Online</font></html>");
+		} else {
+			this.lblOtherUserStatus.setText("<html>User status: <font color='red'>Offline</font></html>");
+		}
+	}
+
+	public void setOtherGroupStatus(boolean isGroupChat){
+		if(isGroupChat) {
+			this.lblOtherUserStatus.setText("");
 		} else {
 			this.lblOtherUserStatus.setText("<html>User status: <font color='red'>Offline</font></html>");
 		}
@@ -352,6 +374,61 @@ public class MainPanel extends JPanel {
 		}
 	}
 	
+	public boolean isAutoDecryptOn() {
+		return rbtnDekryptAuto.isSelected();
+	}
+	
+	/** 
+     * Refactor
+     * Extraherad fr�n ButtonListener-klassen f�r att anv�ndas med Enter fr�n textArea enligt Krav03
+     * Krav03: Det ska g� att skicka meddelanden genom att trycka Enter. Klar
+     * Buggfix: Bugg05 -> Det ska inte g� att skicka tomma meddelande. Klar
+     */
+    private void sendMessage() {
+        mainController.restartDisconnectTimer();
+        JLabel selectedContact = (isGroupInFocus) ? jlistGroupChats.getSelectedValue() : jlistContactList.getSelectedValue();
+        byte[] bytesOfMessage = null;
+        if(!getMessageTxt().isEmpty()) {
+            try {
+                bytesOfMessage = getMessageTxt().getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            if(bytesOfMessage.length > 3 * Math.pow(10, 6)) {
+                JOptionPane.showMessageDialog(null, "Please write a message consisting of less than 3 MB");
+            } else if (selectedContact != null) {
+                mainController.sendMessage(selectedContact.getName(), getMessageTxt().getBytes(), isGroupInFocus, Message.TYPE_TEXT);
+            } else {
+                JOptionPane.showMessageDialog(null, "Please select a contact or a group.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            }
+            
+        }
+       
+
+    }
+
+	/** 
+	 * �ndra default keymap "ENTER" i txtMessageField till att skicka ist�llet f�r radbryt
+	 * Krav03
+	 */
+    private void setupKeyActions() {
+        Action sendAction = new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                sendMessage();
+
+            }
+        };
+
+        KeyStroke sendOnReturn = KeyStroke.getKeyStroke("ENTER");
+        txtMessageField.getInputMap().put(sendOnReturn, "ENTER");
+        txtMessageField.getActionMap().put("ENTER", sendAction);
+
+
+
+    }
+	
 	/**
 	 * inre klass som hanterar händelser för
 	 * knapptryck i chattfönstret. 
@@ -363,21 +440,7 @@ public class MainPanel extends JPanel {
 			if(event.getSource() == btnLogout) {
 				mainController.disconnect();
 			} else if (event.getSource() == btnSend) {
-				mainController.restartDisconnectTimer();
-				JLabel selectedContact = (isGroupInFocus) ? jlistGroupChats.getSelectedValue() : jlistContactList.getSelectedValue();
-				byte[] bytesOfMessage = null;
-				try {
-					bytesOfMessage = getMessageTxt().getBytes("UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				if(bytesOfMessage.length > 3 * Math.pow(10, 6)) {
-					JOptionPane.showMessageDialog(null, "Please write a message consisting of less than 3 MB");
-				} else if (selectedContact != null) {
-					mainController.sendMessage(selectedContact.getName(), getMessageTxt().getBytes(), isGroupInFocus, Message.TYPE_TEXT);
-				} else {
-					JOptionPane.showMessageDialog(null, "Please select a contact or a group.", "Info", JOptionPane.INFORMATION_MESSAGE);
-				}
+			    sendMessage();
 			} else if (event.getSource() == btnSendFile) {
 				mainController.restartDisconnectTimer();
 				JLabel selectedContact = (isGroupInFocus) ? jlistGroupChats.getSelectedValue() : jlistContactList.getSelectedValue();
@@ -401,12 +464,16 @@ public class MainPanel extends JPanel {
 			} else if (event.getSource() == btnRemoveCon) {
 				JLabel selectedContact = jlistContactList.getSelectedValue();
 				if (selectedContact != null) {
+				    String selectedContactName = selectedContact.getName();
 					Object[] options = { "Yes", "No" };
 					int choice = JOptionPane.showOptionDialog(null,
-							"Do you want to remove " + selectedContact.getName() + " from contact list?",
+							"Do you want to remove " + selectedContactName + " from contact list?",
 							"Remove Contact", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
 					if (choice == 0) {
 						System.out.println("Yes");
+						//Bugg04: Kontakt g�r ej att radera
+						mainController.sendRemoveContactRequest(selectedContactName);
+						JOptionPane.showMessageDialog(null, "The contact has been removed");
 					} else {
 						System.out.println("No");
 					}
@@ -428,8 +495,8 @@ public class MainPanel extends JPanel {
 				}
 			}
 		}
+		
 	}
-
 	/**
 	 * inre klass som gör att en JList visar JLabels som text eller bild utan markering.
 	 */

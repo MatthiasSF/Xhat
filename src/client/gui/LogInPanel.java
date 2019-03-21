@@ -7,14 +7,8 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
+import javax.swing.border.Border;
 
 
 /**
@@ -34,6 +28,7 @@ public class LogInPanel extends JPanel {
 		this.txtUsername.setText(userName);
 		this.txtPassword.setText(password);
 		this.logInController = logInController;
+		this.setLayout(new BorderLayout());
 		generatePanel(); //test
 	}
 
@@ -74,7 +69,20 @@ public class LogInPanel extends JPanel {
 		mainPanel.add(lblHeadline, BorderLayout.NORTH);
 		mainPanel.add(contentPanel, BorderLayout.CENTER);
 		mainPanel.add(btnPanel, BorderLayout.SOUTH);
-		add(mainPanel);	
+
+		JPanel infoPanel = new JPanel();
+		JTextArea taInfo = new JTextArea("This is a chat program that uses steganography to hide messages until " +
+				"the recipient clicks on the message. \n\nThe messages are encrypted on the server.");
+		taInfo.setEditable(false);
+		taInfo.setLineWrap(true);
+		taInfo.setWrapStyleWord(true);
+		taInfo.setPreferredSize(new Dimension(230, 140));
+		infoPanel.setPreferredSize(new Dimension(240, 140));
+		infoPanel.add(taInfo);
+		mainPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+		infoPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+		this.add(infoPanel, BorderLayout.EAST);
+		this.add(mainPanel, BorderLayout.WEST);
 	}
 
 	/**

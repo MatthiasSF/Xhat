@@ -88,9 +88,20 @@ public class User implements Serializable {
 		updateContactList(user);
 	}
 	
+	//Bugg04: Kontakt går ej att radera
+	/** 
+	 * Removes a contact from the users contactlist
+	 * @param user is the user to remove from the list. 
+	 */
+	public void removeContact(User user) {
+	    contacts.remove(user);
+	    updateContactList(user); //this is weird, you pass along a User-reference all the way, then end up never using it. 
+	}
+	
 	public void updateContactList(User user) {
 		if (clientConnection != null) {
-			clientConnection.updateContactList(user);
+		    System.out.println("User.updateContactList");
+			clientConnection.updateContactList(user); //this user reference is never used... 
 		}
 	}
 	

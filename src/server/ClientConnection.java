@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Calendar;
 import java.util.LinkedList;
-
 import common.Message;
 import common.ResultCode;
 
@@ -37,7 +36,7 @@ public class ClientConnection implements Runnable, UserListener {
 			disconnectClient();
 		}
 	}
-	
+
 	/**
 	 * Returnerar den User som klienten loggat in som.
 	 * @return Den User som klienten loggat in som.
@@ -45,7 +44,7 @@ public class ClientConnection implements Runnable, UserListener {
 	public User getUser() {
 		return user;
 	}
-	
+
 	public boolean isConnected() {
 		boolean connected = false;
 		if(socket != null) {
@@ -92,7 +91,7 @@ public class ClientConnection implements Runnable, UserListener {
 			logListener.logError("receiveMessage() Received invalid message-obj from " + getUser().getUserName());
 		}
 	}
-	
+
 	private void receiveContactRequest(Object requestObj) {
 		String[] newContactRequest;
 		if (requestObj instanceof String[]) {
@@ -103,6 +102,13 @@ public class ClientConnection implements Runnable, UserListener {
 				if (declineRequest) {
 					this.user.removeContactRequest(requestedUser);
 					requestedUser.removeContactRequest(this.user);
+
+					ClientConnection clientConnection = user.getClientConnection();
+					if (requestedUser.isOnline()) {
+						requestedUser.getClientConnection().contactRequestDenied(this.user.getUserName());
+					}
+					
+					
 				} else {
 					if (requestedUser.hasRequestedContactWith(getUser())) {
 						this.user.addContact(requestedUser);
@@ -119,6 +125,32 @@ public class ClientConnection implements Runnable, UserListener {
 			}
 		} else {
 			logListener.logError("receiveContactRequest() Received invalid contactRequest-obj from " + getUser().getUserName());
+		}
+	}
+	private void contactRequestDenied(String userName) {
+		try {
+			oos.writeObject("ContactRequestDenied");
+			oos.writeObject(userName);
+			oos.flush();
+		} catch (IOException e) {
+			System.out.println("fail contactrequestdenied in clientconnection");
+		}
+		
+	}
+
+	//Bugg04: Kontakt g�r ej att radera
+	/** 
+	 * Tell the server what to do when receiving a request to remove a contact. 
+	 * Remove the connection both ways between two users. 
+	 * @param requestObj - String[] object containing the username of the user to remove. 
+	 */
+	private void receiveRemoveContactRequest(Object requestObj) {
+		String[] removeContactRequest;
+		if(requestObj instanceof String[]) {
+			removeContactRequest = (String[]) requestObj;
+			User requestedUser = clientsManager.getUser(removeContactRequest[0]);
+			this.user.removeContact(requestedUser);
+			requestedUser.removeContact(this.user);
 		}
 	}
 
@@ -140,25 +172,25 @@ public class ClientConnection implements Runnable, UserListener {
 	}
 
 	private void receiveLeaveGroup(Object groupIdObj) throws IOException {
-		
+
 		if(groupIdObj instanceof String){
-		 Group group = clientsManager.getGroup((String)groupIdObj);
-		
-		    if (group != null) {
+			Group group = clientsManager.getGroup((String)groupIdObj);
 
-		        if (group.removeMember(getUser()) && getUser().removeGroup(group)) {
+			if (group != null) {
 
-		            logListener.logInfo("receiveLeaveGroup() " + getUser().getUserName() + " removed from group: " + group.getGroupName());
+				if (group.removeMember(getUser()) && getUser().removeGroup(group)) {
 
-		        }
-		    }
-		    } else {
+					logListener.logInfo("receiveLeaveGroup() " + getUser().getUserName() + " removed from group: " + group.getGroupName());
 
-		        logListener.logInfo("receiveLeaveGroup() group not found: " + (String)groupIdObj);
+				}
+			}
+		} else {
 
-		    }
+			logListener.logInfo("receiveLeaveGroup() group not found: " + (String)groupIdObj);
 
 		}
+
+	}
 
 	private LinkedList<User> getRecipients(Message message) {
 		LinkedList<User> recipients = new LinkedList<User>();
@@ -181,7 +213,17 @@ public class ClientConnection implements Runnable, UserListener {
 		}
 		return recipients;
 	}
-	
+
+	public void sendDeniedContactRequest(String username) {
+		try {
+			oos.writeObject("ContactRequestDenied");
+			oos.writeObject(username);
+			oos.flush();
+		} catch (IOException e) {
+			disconnectClient();
+		}
+	}
+
 	private void transferMessageToRecipients(Message message) {
 		LinkedList<User> recipients = getRecipients(message);
 		if (recipients != null && !recipients.isEmpty()) {
@@ -197,6 +239,7 @@ public class ClientConnection implements Runnable, UserListener {
 		}
 	}
 
+
 	private void transferMessage(Message message) {
 		try {
 			oos.writeObject("NewMessage");
@@ -208,22 +251,26 @@ public class ClientConnection implements Runnable, UserListener {
 			disconnectClient();
 		}
 	}
-	
+
 	/**
 	 * Send contactList & groupChats
 	 * @throws IOException 
 	 */
 	private void transferContactList() throws IOException {
+		System.out.println("ClientConnection.transferContactList start");
 		String[][] contacts = getUser().getContactsArray();
 		int nbrOfContacts = contacts.length;
-		if(nbrOfContacts > 0) {
+		if(nbrOfContacts >= 0) { //Bugg04: Kontakt g�r ej att radera changed from > 0 to >=0 in order to be able to remove a single contact.  
+			System.out.println("nbrOfContacts: " + nbrOfContacts + " in the if-statement");
 			oos.writeObject("ContactList");
 			oos.writeObject(contacts);
 			oos.flush();
 			logListener.logInfo("Transfered " + nbrOfContacts + " contacts to: " + getUser().getUserName());
 		}
+
+		System.out.println("ClientConnection.transferContactList end");
 	}
-	
+
 	private void transferGroupChats() throws IOException {
 		String[][] groups = getUser().getGroupsArray();
 		oos.writeObject("GroupChats");
@@ -243,7 +290,7 @@ public class ClientConnection implements Runnable, UserListener {
 			logListener.logInfo(nbrOfMessages + " buffered messages transferred to: " + user.getUserName());
 		}
 	}
-	
+
 	private void transferContactRequests() throws IOException {
 		if (user.hasContactRequests()) {
 			String[] contactRequests = user.getContactRequestsArray();
@@ -282,6 +329,7 @@ public class ClientConnection implements Runnable, UserListener {
 
 	private boolean login(Object credentialsObj) {
 		boolean success = false;
+		int result = ResultCode.ok;
 		try {
 			if (credentialsObj instanceof String[]) {
 				String[] credentials;
@@ -289,22 +337,38 @@ public class ClientConnection implements Runnable, UserListener {
 				String userName, password;
 				userName = credentials[0];
 				password = credentials[1];
-				User user = clientsManager.getUser(userName);
-				if (user != null && user.checkPassword(password) == true) {
-					oos.writeBoolean(true);
-					oos.flush();
-					this.user = user;
-					ClientConnection clientConnection = user.getClientConnection();
-					if (clientConnection != null) {
-						clientConnection.disconnectClient();
+				boolean userNameOk = userName.length() > 0 && userName.length() <= 10 && 
+						!hasSpecialCharacters(userName);
+				boolean passwordOk = password.length() > 0 && password.length() <= 20;
+
+				if (userNameOk && passwordOk) {
+					User user = clientsManager.getUser(userName);
+					if (user != null && user.checkPassword(password) == true) {
+						this.user = user;
+						ClientConnection clientConnection = user.getClientConnection();
+						if (clientConnection != null) {
+							clientConnection.disconnectClient();
+						}
+						user.setClientConnection(this);
+						success = true;
+					} else {
+						logListener.logError("Client login failed: wrong userName or password.");
+						result = ResultCode.wrongCredentials;
 					}
-					user.setClientConnection(this);
-					success = true;
 				} else {
-					logListener.logError("Client login failed: wrong userName or password.");
-					oos.writeBoolean(false);
-					oos.flush();
+					if (!userNameOk && !passwordOk) {
+						logListener.logError("Client login failed: Username and password have wrong format.");
+						result = ResultCode.wrongUserNameAndPasswordFormat;
+					} else if (!userNameOk) {
+						logListener.logError("Client login failed: Username has wrong format.");
+						result = ResultCode.wrongUsernameFormat;
+					} else if (!passwordOk) {
+						logListener.logError("Client login failed: Password has wrong format.");
+						result = ResultCode.wrongPasswordFormat;
+					}
 				}
+				oos.writeInt(result);
+				oos.flush();
 			} else {
 				logListener.logError("login() Received non-string[] credentials from client.");
 			}
@@ -313,7 +377,7 @@ public class ClientConnection implements Runnable, UserListener {
 		}
 		return success;
 	}
-	
+
 	private void register(Object credentialsObj) {
 		try {
 			if (credentialsObj instanceof String[]) {
@@ -335,7 +399,7 @@ public class ClientConnection implements Runnable, UserListener {
 				} else {
 					if (!userNameOk && !passwordOk) {
 						logListener.logError("Registration failed: Username and password have wrong format.");
-						result = ResultCode.wrongCredentials;
+						result = ResultCode.wrongUserNameAndPasswordFormat;
 					} else if (!userNameOk) {
 						logListener.logError("Registration failed: Username has wrong format.");
 						result = ResultCode.wrongUsernameFormat;
@@ -344,7 +408,7 @@ public class ClientConnection implements Runnable, UserListener {
 						result = ResultCode.wrongPasswordFormat;
 					}
 				}
-				
+
 				oos.writeInt(result);
 				oos.flush();
 			} else {
@@ -354,7 +418,7 @@ public class ClientConnection implements Runnable, UserListener {
 			logListener.logError("Client registration timeout");
 		}
 	}
-	
+
 	@Override
 	public void updateContactList(User contact) {
 		if(isConnected()) {
@@ -454,6 +518,11 @@ public class ClientConnection implements Runnable, UserListener {
 							break;
 						case "Disconnect":
 							disconnectClient();
+							break;
+
+							//Bugg04: Kontakt g�r ej att radera
+						case "RemoveContactRequest":
+							receiveRemoveContactRequest(ois.readObject());
 							break;
 						default:
 							logListener.logError("Unknown request");

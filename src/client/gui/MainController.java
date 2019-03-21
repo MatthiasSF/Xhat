@@ -238,7 +238,8 @@ public class MainController {
 				listModel.add(0, listModel.remove(contactPos));
 			}
 		}
-		JOptionPane.showMessageDialog(frameMain, "You got a new message from " + userNameToNotify);	
+		//Krav 07: Programmet ska inte starta nya rutor f�r varje meddelande.
+		//JOptionPane.showMessageDialog(frameMain, "You got a new message from " + userNameToNotify);	
 	}
 	
 	private int getPosInListModel(DefaultListModel<JLabel> listModel, String contactName) {
@@ -275,6 +276,10 @@ public class MainController {
 			mainPanel.setChattingWith(contactName);
 			mainPanel.setOtherUserStatus(contact.isOnline());
 			mainPanel.scrollDownConversation();
+			if(isGroup) {
+				mainPanel.setGroupChattingWith(contactName);
+				mainPanel.setOtherGroupStatus(true);
+			}
 		}
 	}
 
@@ -313,7 +318,7 @@ public class MainController {
 
 	public void addMessageToConversation(Contact contact, Message message, boolean decode) {
 		JLabel jLabelMessage;
-		if(decode == true) {
+		if(decode == true || mainPanel.isAutoDecryptOn()) {
 			jLabelMessage = decodeMessage(message);
 		} else {
 			ImageIcon stegoImage = new ImageIcon(message.getStegoData());
@@ -426,6 +431,15 @@ public class MainController {
 		String[] requestObj = new String[]{userName, Boolean.toString(decline)};
 		clientCommunications.sendNewContactRequest(requestObj);
 	}
+	
+	/** 
+	 * Create the request for the server that removal of a contact is desired. 
+	 * @param userName the name of the user to remove. 
+	 */
+	public void sendRemoveContactRequest(String userName) {
+	    String[] requestObj = new String[] {userName};
+	    clientCommunications.sendRemoveContactRequest(requestObj);
+	}
 
 	public void notifyNewContactRequest(String requestFromUserName) {
 		Object[] options = { "Yes", "No" };
@@ -439,6 +453,9 @@ public class MainController {
 		}
 	}
 	
+	public void notifyNewContactRequestDenied(String deniedUserRequest) {
+		JOptionPane.showMessageDialog(null, deniedUserRequest + " denied your friend request");
+	}
 
     private void startDisconnectTimer() {
         TimerTask timerTask = new TimerTask() {

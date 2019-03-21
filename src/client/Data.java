@@ -23,6 +23,16 @@ public class Data {
 	public Contact getContact(String contactName) {
 		return contacts.get(contactName);
 	}
+	//Bugg04: Kontakt går ej att radera. 
+	/** 
+	 * Clear the list of contacts entirely. 
+	 * This works out okay since we iterate through it all anyways. 
+	 * A prettier solution would be to pass in a username and remove just that one.
+	 * In practice it probably is about the same amount of computing. 
+	 */
+	public void removeAllContacts() {
+	    contacts.clear();
+	}
 	
 	public boolean isContact(String contactName) {
 		return contacts.containsKey(contactName);

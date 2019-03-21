@@ -57,11 +57,30 @@ public class LogInController {
 	}
 
 	public void login(String userName, String password) {
-		if (clientCommunications.login(userName, password) == true) {
+		int result = clientCommunications.login(userName, password);
+		if (result == ResultCode.ok) { //Success
+			ClientLogger.logInfo("User successfully logged in: " + userName);
 			disposeLogInPanel();
 		} else {
-			JOptionPane.showMessageDialog(null, "Login failed", "Failure", JOptionPane.ERROR_MESSAGE);
+			String errorMsg;
+			if (result == ResultCode.wrongCredentials) {
+				errorMsg = "Log in failed: Wrong username or password.";
+			} else if(result == ResultCode.serverDown) {
+				errorMsg = "Log in failed: The communication with the server failed.";
+			} else if (result == ResultCode.wrongUserNameAndPasswordFormat) {
+				errorMsg = "Log in failed: Username and Password has wrong format.";
+			} else if(result == ResultCode.wrongUsernameFormat) {
+				errorMsg = "Log in failed: Username has wrong format.";
+			} else if(result == ResultCode.wrongPasswordFormat) {
+				errorMsg = "Log in failed: Password has wrong format.";
+			} else {
+				errorMsg = "Log in failed.";
+			}
+			ClientLogger.logError(errorMsg);
+			JOptionPane.showMessageDialog(null, errorMsg, "Failure", JOptionPane.ERROR_MESSAGE);
 		}
+		
+		
 	}
 
 	public void register(String userName, String password, String passwordRepeat) {
@@ -73,7 +92,7 @@ public class LogInController {
 				showLogInPanel(userName, "");
 			} else {
 				String errorMsg;
-				if (result == ResultCode.wrongCredentials) {
+				if (result == ResultCode.wrongUserNameAndPasswordFormat) {
 					errorMsg = "Registration failed: Username and password not accepted.";
 				} else if (result == ResultCode.wrongUsernameFormat) {
 					errorMsg = "Registration failed: Username has wrong format.";
@@ -81,6 +100,8 @@ public class LogInController {
 					errorMsg = "Registration failed: Password has wrong format.";
 				} else if (result == ResultCode.userNameAlreadyTaken) {
 					errorMsg = "Registration failed: Username already taken.";
+				} else if(result == ResultCode.serverDown) {
+				    errorMsg = "Registration failed: Could not connect to server."; //Krav 01 
 				} else {
 					errorMsg = "Registration failed.";
 				}
