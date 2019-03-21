@@ -1,0 +1,2 @@
+feb 22, 2019 3:12:40 EM server.ServerLogger logError
+ALLVARLIG: Failed login from 127.0.0.1

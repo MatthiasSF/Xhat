@@ -10,5 +10,4 @@ public class InitServer {
 		ServerConnection serverConnection = new ServerConnection(5555, clientsManager, threadPool);
 		ServerController serverController = new ServerController(serverConnection);
 	}
-
 }
